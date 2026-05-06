@@ -1,0 +1,4 @@
+name=Fast Travel
+id=FastTravel
+description=Adds a fast travel button to vehicle dashboards. Teleport to your safe house or discovered cities.
+modversion=1.0

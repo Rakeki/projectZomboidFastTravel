@@ -1,0 +1,11 @@
+[EN]
+FastTravel_TravelTooltip=Fast Travel to your safe house or a discovered city
+FastTravel_SafeHouse=Safe House
+FastTravel_NoDestinations=No destinations available. Set a safe house first.
+FastTravel_DestinationTitle=Fast Travel Destination
+FastTravel_DestinationBlocked=Destination blocked!
+FastTravel_CancelLabel=Click to Cancel
+FastTravel_NotInVehicle=You must be in a vehicle
+FastTravel_VehicleMismatch=Vehicle changed
+FastTravel_NotDriver=Only the driver can fast travel
+FastTravel_Cooldown=Cooldown remaining:
