@@ -95,18 +95,12 @@ local function onTick()
         if player then
             local vehicle = player:getVehicle()
             if vehicle then
-                local sq = FastTravel.Definitions.findValidTeleportSquare(FastTravel.Main.targetX, FastTravel.Main.targetY)
-                if sq then
-                    vehicle:setX(FastTravel.Main.targetX)
-                    vehicle:setY(FastTravel.Main.targetY)
-                    vehicle:setSquare(sq)
-                    player:setX(FastTravel.Main.targetX + 0.5)
-                    player:setY(FastTravel.Main.targetY + 0.5)
-                    player:setSquare(sq)
-                    print("FastTravel: Teleported to destination")
-                else
-                    print("FastTravel: No valid square found at destination")
-                end
+                local tx = FastTravel.Main.targetX
+                local ty = FastTravel.Main.targetY
+                player:teleportTo(tx + 0.5, ty + 0.5, 0)
+                vehicle:setX(tx)
+                vehicle:setY(ty)
+                print("FastTravel: Teleported to destination (" .. tx .. ", " .. ty .. ")")
             end
         end
         FastTravel.Main.targetX = nil
