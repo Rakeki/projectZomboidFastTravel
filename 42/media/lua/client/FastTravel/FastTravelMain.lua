@@ -1,25 +1,49 @@
 require "ISUI/ISButton"
 require "FastTravel/FastTravelDefinitions"
 require "FastTravel/FastTravelDestinationPanel"
+require "FastTravel/FastTravelCountdownUI"
 
 print("=== FastTravel Main Loaded ===")
 
 FastTravel = FastTravel or {}
 FastTravel.Main = FastTravel.Main or {}
-FastTravel.Main.countdownLabel = nil
 FastTravel.Main.countdownEnd = nil
 FastTravel.Main.targetX = nil
 FastTravel.Main.targetY = nil
 FastTravel.Main.targetZ = nil
 FastTravel.Main.dashboardButton = nil
+FastTravel.Main.countdownUI = nil
+
+function getTimeMillis()
+    return getGameTime():getCalender():getTimeInMillis()
+end
 
 function startCountdown(targetX, targetY, targetZ, destinationName)
     FastTravel.Main.targetX = targetX
     FastTravel.Main.targetY = targetY
     FastTravel.Main.targetZ = targetZ or 0
-    FastTravel.Main.countdownEnd = getTimestampMs() + FastTravel.Definitions.CountdownSeconds * 1000
+    FastTravel.Main.countdownEnd = getTimeMillis() + FastTravel.Definitions.CountdownSeconds * 1000
     FastTravel.Main.countdownLabel = destinationName
+
+    local ui = FastTravelCountdownUI:new(destinationName)
+    ui:initialise()
+    ui:addToUIManager()
+    FastTravel.Main.countdownUI = ui
+
     print("FastTravel: Starting countdown to " .. destinationName)
+end
+
+function cancelCountdown()
+    FastTravel.Main.countdownEnd = nil
+    FastTravel.Main.targetX = nil
+    FastTravel.Main.targetY = nil
+    FastTravel.Main.targetZ = nil
+    FastTravel.Main.countdownLabel = nil
+    if FastTravel.Main.countdownUI then
+        FastTravel.Main.countdownUI:removeFromUIManager()
+        FastTravel.Main.countdownUI = nil
+    end
+    print("FastTravel: Countdown cancelled")
 end
 
 function openDestinationPanel()
@@ -61,13 +85,17 @@ local function updateButton()
 end
 
 local function onTick()
-    if FastTravel.Main.countdownEnd and getTimestampMs() >= FastTravel.Main.countdownEnd then
+    if FastTravel.Main.countdownEnd and getTimeMillis() >= FastTravel.Main.countdownEnd then
         FastTravel.Main.countdownEnd = nil
+        if FastTravel.Main.countdownUI then
+            FastTravel.Main.countdownUI:removeFromUIManager()
+            FastTravel.Main.countdownUI = nil
+        end
         local player = getPlayer()
         if player then
             local vehicle = player:getVehicle()
             if vehicle then
-                local sq = getSquare(FastTravel.Main.targetX, FastTravel.Main.targetY, 0)
+                local sq = FastTravel.Definitions.findValidTeleportSquare(FastTravel.Main.targetX, FastTravel.Main.targetY)
                 if sq then
                     vehicle:setX(FastTravel.Main.targetX)
                     vehicle:setY(FastTravel.Main.targetY)
@@ -97,6 +125,7 @@ Events.OnTick.Add(onTick)
 
 FastTravel.Main.startCountdown = startCountdown
 FastTravel.Main.openDestinationPanel = openDestinationPanel
+FastTravel.Main.cancelCountdown = cancelCountdown
 
 local function onKeyKeepPressed(key)
     if key == Keyboard.KEY_H then

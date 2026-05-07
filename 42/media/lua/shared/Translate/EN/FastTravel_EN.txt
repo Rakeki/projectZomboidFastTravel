@@ -9,3 +9,4 @@ FastTravel_NotInVehicle=You must be in a vehicle
 FastTravel_VehicleMismatch=Vehicle changed
 FastTravel_NotDriver=Only the driver can fast travel
 FastTravel_Cooldown=Cooldown remaining:
+FastTravel_CountdownTo=Traveling to

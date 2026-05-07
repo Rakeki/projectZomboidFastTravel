@@ -1,5 +1,8 @@
-name=Example Mod
+name=Fast Travel
 poster=poster.png
-id=exampleMod
-description=Project Zomboid's Example Mod
-url=http://theindiestone.com/forums/index.php/topic/2011-how-to-use-the-upcoming-modloader/
+icon=poster.png
+id=FastTravel
+author=Rakeki
+description=Fast travel between discovered cities while driving a vehicle.\n\nPress <SPAN HIGHLIGHT="KEY">H</SPAN> to set your current location as a safehouse for quick return.
+modversion=1.0.0
+versionMin=42.0
