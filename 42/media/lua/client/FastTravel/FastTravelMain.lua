@@ -13,6 +13,9 @@ FastTravel.Main.targetY = nil
 FastTravel.Main.targetZ = nil
 FastTravel.Main.dashboardButton = nil
 FastTravel.Main.countdownUI = nil
+FastTravel.Main.moveVehicleX = nil
+FastTravel.Main.moveVehicleY = nil
+FastTravel.Main.moveVehicleRef = nil
 
 function getTimeMillis()
     return getGameTime():getCalender():getTimeInMillis()
@@ -39,6 +42,9 @@ function cancelCountdown()
     FastTravel.Main.targetY = nil
     FastTravel.Main.targetZ = nil
     FastTravel.Main.countdownLabel = nil
+    FastTravel.Main.moveVehicleX = nil
+    FastTravel.Main.moveVehicleY = nil
+    FastTravel.Main.moveVehicleRef = nil
     if FastTravel.Main.countdownUI then
         FastTravel.Main.countdownUI:removeFromUIManager()
         FastTravel.Main.countdownUI = nil
@@ -93,20 +99,37 @@ local function onTick()
         end
         local player = getPlayer()
         if player then
-            local vehicle = player:getVehicle()
-            if vehicle then
-                local tx = FastTravel.Main.targetX
-                local ty = FastTravel.Main.targetY
-                player:teleportTo(tx + 0.5, ty + 0.5, 0)
+            local tx = FastTravel.Main.targetX
+            local ty = FastTravel.Main.targetY
+            FastTravel.Main.moveVehicleRef = player:getVehicle()
+            player:teleportTo(tx + 0.5, ty + 0.5, 0)
+            FastTravel.Main.moveVehicleX = tx
+            FastTravel.Main.moveVehicleY = ty
+            print("FastTravel: Teleported player to (" .. tx .. ", " .. ty .. ")")
+        end
+    end
+
+    if FastTravel.Main.moveVehicleX then
+        local player = getPlayer()
+        if player then
+            local vehicle = FastTravel.Main.moveVehicleRef
+            local tx = FastTravel.Main.moveVehicleX
+            local ty = FastTravel.Main.moveVehicleY
+            local sq = getSquare(tx, ty, 0)
+            if sq and vehicle then
                 vehicle:setX(tx)
                 vehicle:setY(ty)
-                print("FastTravel: Teleported to destination (" .. tx .. ", " .. ty .. ")")
+                vehicle:setSquare(sq)
+                vehicle:setCharacterPosition(player, 0, "inside")
+                player:setSquare(sq)
+                FastTravel.Main.moveVehicleX = nil
+                FastTravel.Main.moveVehicleY = nil
+                FastTravel.Main.moveVehicleRef = nil
+                print("FastTravel: Vehicle teleported to destination")
             end
         end
-        FastTravel.Main.targetX = nil
-        FastTravel.Main.targetY = nil
-        FastTravel.Main.targetZ = nil
     end
+
     updateButton()
 end
 
