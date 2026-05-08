@@ -84,6 +84,36 @@ local function updateButton()
     end
 end
 
+local function trySpawnVehicle(scriptName, x, y)
+    local v = addVehicle(scriptName, x, y, 0)
+    if v then
+        local ok, script = pcall(function() return v:getScript() end)
+        if ok and script then return v end
+    end
+    return nil
+end
+
+local function findVehicleSpawn(scriptName, tx, ty, maxRadius)
+    local v = trySpawnVehicle(scriptName, tx, ty)
+    if v then return v, tx, ty end
+    for r = 1, maxRadius do
+        for dx = -r, r do
+            for dy = -r, r do
+                if math.abs(dx) == r or math.abs(dy) == r then
+                    local sq = getSquare(tx + dx, ty + dy, 0)
+                    if sq then
+                        local fail, isWater = pcall(function() return sq:isWater() end)
+                        if fail and isWater then break end
+                    end
+                    v = trySpawnVehicle(scriptName, tx + dx, ty + dy)
+                    if v then return v, tx + dx, ty + dy end
+                end
+            end
+        end
+    end
+    return nil, tx, ty
+end
+
 local function onTick()
     if FastTravel.Main.countdownEnd and getTimeMillis() >= FastTravel.Main.countdownEnd then
         FastTravel.Main.countdownEnd = nil
@@ -106,12 +136,16 @@ local function onTick()
 
                 player:teleportTo(tx + 0.5, ty + 0.5, 0)
 
-                local newVehicle = addVehicle(scriptName, tx, ty, 0)
+                local newVehicle, spawnX, spawnY = findVehicleSpawn(scriptName, tx, ty, 30)
                 if newVehicle then
-                    newVehicle:repair()
+                    if spawnX ~= tx or spawnY ~= ty then
+                        player:teleportTo(spawnX + 0.5, spawnY + 0.5, 0)
+                    end
                     newVehicle:enter(seat, player)
                     newVehicle:setCharacterPosition(player, seat, "inside")
-                    print("FastTravel: Teleported with vehicle to (" .. tx .. ", " .. ty .. ")")
+                    print("FastTravel: Teleported with vehicle to (" .. spawnX .. ", " .. spawnY .. ")")
+                else
+                    print("FastTravel: Teleported to (" .. tx .. ", " .. ty .. ") - no valid vehicle spawn found")
                 end
             else
                 player:teleportTo(tx + 0.5, ty + 0.5, 0)
