@@ -205,6 +205,7 @@ local function onFillContextMenu(playerNum, context)
     local player = getSpecificPlayer(playerNum)
     if not player then return end
     if not player:getVehicle() then return end
+    if not isRoadSquare(math.floor(player:getX()), math.floor(player:getY())) then return end
 
     context:addOption("Set Fast Travel Safehouse", nil, function()
         local x = math.floor(player:getX())
