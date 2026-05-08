@@ -201,17 +201,16 @@ FastTravel.Main.startCountdown = startCountdown
 FastTravel.Main.openDestinationPanel = openDestinationPanel
 FastTravel.Main.cancelCountdown = cancelCountdown
 
-local function onFillContextMenu(playerNum, context)
-    local player = getSpecificPlayer(playerNum)
-    if not player then return end
-    if not player:getVehicle() then return end
-    if not isRoadSquare(math.floor(player:getX()), math.floor(player:getY())) then return end
+local function onFillContextMenu(playerObj, context)
+    if not playerObj then return end
+    if not playerObj:getVehicle() then return end
+    if not isRoadSquare(math.floor(playerObj:getX()), math.floor(playerObj:getY())) then return end
 
     context:addOption("Set Fast Travel Safehouse", nil, function()
-        local x = math.floor(player:getX())
-        local y = math.floor(player:getY())
+        local x = math.floor(playerObj:getX())
+        local y = math.floor(playerObj:getY())
         FastTravel.Definitions.setSafehouse(x, y)
-        player:Say("Safehouse set to " .. x .. ", " .. y)
+        playerObj:Say("Safehouse set to " .. x .. ", " .. y)
     end)
 end
 
