@@ -3,6 +3,6 @@ poster=poster.png
 icon=poster.png
 id=FastTravel
 author=Rakeki
-description=Fast travel between discovered cities while driving a vehicle.\n\nPress <SPAN HIGHLIGHT="KEY">H</SPAN> to set your current location as a safehouse for quick return.
+description=Fast travel between discovered cities while driving a vehicle.\n\nRight-click on the ground and select "Set Fast Travel Safehouse" to mark your current location for quick return.
 modversion=1.0.0
 versionMin=42.0
