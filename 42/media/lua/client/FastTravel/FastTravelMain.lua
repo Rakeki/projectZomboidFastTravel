@@ -116,13 +116,15 @@ local function trySpawnVehicle(scriptName, x, y)
     return nil
 end
 
-local function findNearestRoad(tx, ty, maxRadius)
+local function spawnOnNearestRoad(scriptName, tx, ty, maxRadius)
     for r = 1, 30 do
         for dx = -r, r do
             for dy = -r, r do
                 if math.abs(dx) == r or math.abs(dy) == r then
-                    if isRoadSquare(tx + dx, ty + dy) then
-                        return tx + dx, ty + dy
+                    local nx, ny = tx + dx, ty + dy
+                    if isRoadSquare(nx, ny) then
+                        local v = trySpawnVehicle(scriptName, nx, ny)
+                        if v then return v, nx, ny end
                     end
                 end
             end
@@ -132,11 +134,12 @@ local function findNearestRoad(tx, ty, maxRadius)
         for _, dir in ipairs({{1,0},{-1,0},{0,1},{0,-1},{1,1},{-1,1},{1,-1},{-1,-1}}) do
             local nx, ny = tx + dir[1] * d, ty + dir[2] * d
             if isRoadSquare(nx, ny) then
-                return nx, ny
+                local v = trySpawnVehicle(scriptName, nx, ny)
+                if v then return v, nx, ny end
             end
         end
     end
-    return nil, nil
+    return nil, tx, ty
 end
 
 local function onTick()
@@ -161,14 +164,9 @@ local function onTick()
 
                 player:teleportTo(tx + 0.5, ty + 0.5, 0)
 
-                local rx, ry = findNearestRoad(tx, ty, 500)
-                local spawnX, spawnY = rx or tx, ry or ty
-                local newVehicle = nil
-                if rx then
-                    newVehicle = trySpawnVehicle(scriptName, spawnX, spawnY)
-                end
-                if not newVehicle and not rx then
-                    newVehicle = trySpawnVehicle(scriptName, tx, ty)
+                local newVehicle, spawnX, spawnY = spawnOnNearestRoad(scriptName, tx, ty, 500)
+                if not newVehicle then
+                    newVehicle, spawnX, spawnY = trySpawnVehicle(scriptName, tx, ty), tx, ty
                 end
                 if newVehicle then
                     if spawnX ~= tx or spawnY ~= ty then
