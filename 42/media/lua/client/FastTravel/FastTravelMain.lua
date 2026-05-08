@@ -84,6 +84,29 @@ local function updateButton()
     end
 end
 
+local ROAD_KEYWORDS = { "road", "sidewalk", "parking", "tarmac", "gravel", "drive", "asphalt" }
+
+local function isRoadSquare(x, y)
+    local sq = getSquare(x, y, 0)
+    if not sq then return false end
+    local ok1, water = pcall(function() return sq:isWater() end)
+    if ok1 and water then return false end
+    local ok2, floor = pcall(function() return sq:getFloor() end)
+    if ok2 and floor then
+        local ok3, tex = pcall(function() return floor:getTexture() end)
+        if ok3 and tex then
+            local ok4, name = pcall(function() return tex:getName() end)
+            if ok4 and name then
+                local n = name:lower()
+                for _, kw in ipairs(ROAD_KEYWORDS) do
+                    if n:find(kw, 1, true) then return true end
+                end
+            end
+        end
+    end
+    return false
+end
+
 local function trySpawnVehicle(scriptName, x, y)
     local v = addVehicle(scriptName, x, y, 0)
     if v then
@@ -93,25 +116,27 @@ local function trySpawnVehicle(scriptName, x, y)
     return nil
 end
 
-local function findVehicleSpawn(scriptName, tx, ty, maxRadius)
-    local v = trySpawnVehicle(scriptName, tx, ty)
-    if v then return v, tx, ty end
-    for r = 1, maxRadius do
+local function findNearestRoad(tx, ty, maxRadius)
+    for r = 1, 30 do
         for dx = -r, r do
             for dy = -r, r do
                 if math.abs(dx) == r or math.abs(dy) == r then
-                    local sq = getSquare(tx + dx, ty + dy, 0)
-                    if sq then
-                        local fail, isWater = pcall(function() return sq:isWater() end)
-                        if fail and isWater then break end
+                    if isRoadSquare(tx + dx, ty + dy) then
+                        return tx + dx, ty + dy
                     end
-                    v = trySpawnVehicle(scriptName, tx + dx, ty + dy)
-                    if v then return v, tx + dx, ty + dy end
                 end
             end
         end
     end
-    return nil, tx, ty
+    for d = 35, maxRadius, 5 do
+        for _, dir in ipairs({{1,0},{-1,0},{0,1},{0,-1},{1,1},{-1,1},{1,-1},{-1,-1}}) do
+            local nx, ny = tx + dir[1] * d, ty + dir[2] * d
+            if isRoadSquare(nx, ny) then
+                return nx, ny
+            end
+        end
+    end
+    return nil, nil
 end
 
 local function onTick()
@@ -136,7 +161,15 @@ local function onTick()
 
                 player:teleportTo(tx + 0.5, ty + 0.5, 0)
 
-                local newVehicle, spawnX, spawnY = findVehicleSpawn(scriptName, tx, ty, 30)
+                local rx, ry = findNearestRoad(tx, ty, 500)
+                local spawnX, spawnY = rx or tx, ry or ty
+                local newVehicle = nil
+                if rx then
+                    newVehicle = trySpawnVehicle(scriptName, spawnX, spawnY)
+                end
+                if not newVehicle and not rx then
+                    newVehicle = trySpawnVehicle(scriptName, tx, ty)
+                end
                 if newVehicle then
                     if spawnX ~= tx or spawnY ~= ty then
                         player:teleportTo(spawnX + 0.5, spawnY + 0.5, 0)
